@@ -841,18 +841,18 @@ def launch_wrapper( params ):
             ##
             # Execute ungribprocessor
             ##
-            pp = params.ungribprocessor
-            if pp != '':
-                logging.info( "Running ungribprocessor.%s" % pp )
+            for pp in params.ungribprocessor.replace(' ', '').split( ',' ) :
+                if pp != '' :
+                    logging.info( "Running ungribprocessor.%s" % pp )
 
-                if not which( "ungribprocessor.%s" % pp ) :
-                   raise JobError( "UngribProcessor '%s' does not exist" % pp, Job.CodeError.UNGRIB_PROCESSOR_FAILED )
-                preprocessor_log = join( params.log_path, 'ungribprocessor.%s.log' %  pp )
-                code, output = exec_cmd( "ungribprocessor.%s >& %s" % ( pp, preprocessor_log ) )
-                if code :
-                    logging.info( output )
-                    raise JobError( "UngribProcessor '%s' has failed" % pp,
-                            Job.CodeError.UNGRIB_PROCESSOR_FAILED )
+                    if not which( "ungribprocessor.%s" % pp ) :
+                       raise JobError( "UngribProcessor '%s' does not exist" % pp, Job.CodeError.UNGRIB_PROCESSOR_FAILED )
+                    preprocessor_log = join( params.log_path, 'ungribprocessor.%s.log' %  pp )
+                    code, output = exec_cmd( "ungribprocessor.%s >& %s" % ( pp, preprocessor_log ) )
+                    if code :
+                        logging.info( output )
+                        raise JobError( "UngribProcessor '%s' has failed" % pp,
+                                Job.CodeError.UNGRIB_PROCESSOR_FAILED )
 
             ##
             # Run Metgrid
