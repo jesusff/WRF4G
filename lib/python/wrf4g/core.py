@@ -189,7 +189,7 @@ class Experiment(object):
  
     def release(self):
         """
-        Check created job to be release
+        Check created job to be released
         """
         l_realizations  = self._filter_realizations( False, Realization.Status.SUBMITTED )
         for rea in l_realizations :
@@ -208,12 +208,12 @@ class Experiment(object):
 
     def set_priority(self, rea_pattern = False, priority = 0 ):
         """
-        Setting priority to jobs 
+        Setting job priority 
         """
         #list of realization of the experiment
         l_realizations  = self._filter_realizations( rea_pattern, False )
         if not ( l_realizations ):
-            logging.info( 'There are not realizations to set priority.' )
+            logging.info( 'There are no realizations to set priority.' )
         else :
             logging.info( 'Setting priority Experiment %s' % self.name )
             for rea in l_realizations :
@@ -312,7 +312,7 @@ class Experiment(object):
 
     def cycle_time( self, namelist_input, section ) :
         """
-        Clycle realization time
+        Cycle realization time
         """
         realization_name = self.name + '-' + section.split( "/" )[ 1 ]
         for ( start_date, end_date, simult_interval,
@@ -357,7 +357,7 @@ class Experiment(object):
                     rea.cfg              = self.cfg[ section ]
                     # Add realization to the experiment 
                     self.realization.append( rea )
-                    # Create chunk for the realization
+                    # Create chunks for the realization
                     rea.cycle_chunks()
                 # Check storage
                 if not self.dryrun :
@@ -431,14 +431,14 @@ class Experiment(object):
     
 class Realization( object ):
     """
-    A class to mange WRF4G realizations
+    A class to manage WRF4G realizations
     """
     dryrun = False
 
     Status = Enumerate( 'PREPARED', 'SUBMITTED', 'RUNNING',
                         'PENDING', 'FAILED', 'FINISHED' )
         
-    def run(self, first_chunk_run = None , last_chunk_run = None, rerun = False, priority = 0 ):
+    def run(self, first_chunk_run = None , last_chunk_run = None, rerun = False, nodeps = False, priority = 0 ):
         """ 
         Run n_chunk of the realization.
         If n_chunk=0 run every chunk of the realization which haven't finished yet
@@ -508,7 +508,7 @@ class Realization( object ):
                                                               datetime2datewrf(chunk.start_date), 
                                                               datetime2datewrf(chunk.end_date) ) )
                 if not self.dryrun :
-                    chunk.run( index, rerun, priority )
+                    chunk.run( index, rerun, nodeps, priority )
             if not self.dryrun :
                 # Update reealizaiton status
                 self.status = Realization.Status.SUBMITTED
@@ -567,7 +567,7 @@ class Realization( object ):
 
     def cycle_chunks(self):
         """
-        Create chunks the needed for a realization 
+        Create chunks required by the realization 
         """
         # Define which calendar is going to be used
         exp_calendar = Calendar( self.cfg[ 'calendar' ] )
@@ -595,11 +595,11 @@ class Realization( object ):
                 ch.wps        = 0
                 ch.chunk_id   = chunk_id
                 ch.status     = Chunk.Status.PREPARED
-                # Add realization to the experiment 
+                # Add chunk to the realization 
                 self.chunk.append( ch )
             chunk_start_date = chunk_end_date 
             chunk_id         = chunk_id + 1
-        # Set the number of chunks of a relaization    
+        # Set the number of chunks of the realization    
         self.nchunks = chunk_id - 1
 
     @staticmethod 
@@ -783,7 +783,7 @@ class Chunk( object ):
                         'PENDING', 'FAILED', 'FINISHED' )
  
     #METHODS
-    def run (self, index, rerun = False, priority = 0 ):
+    def run (self, index, rerun = False, nodeps = False, priority = 0 ):
         """ 
         Run a chunk is run a drm4g job
         """
@@ -825,8 +825,8 @@ class Chunk( object ):
         # Submit the template
         job = Job()  #create an object "job"
         time.sleep( 0.1 )
-        # if the first chunk of the realization
-        if index == 0 :
+        # If it is the first chunk of the realization, or we are considering non-dependent chunks (--nodeps flag)
+        if index == 0 or nodeps == True:
             job.gw_job    = gw_job.submit( priority = priority, file_template = file_template )
         else:
             # if the chunk is not the first of the realization, 

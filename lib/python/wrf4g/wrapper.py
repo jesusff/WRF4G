@@ -661,10 +661,18 @@ def launch_wrapper( params ):
                     logging.info( "Downloading file '%s'" % file_name ) 
                     copy_file( orig, dest )
                 except :
-                    raise JobError( "'%s' has not copied" % file_name, Job.CodeError.COPY_RST_FILE )
+                    if params.save_wps == 'yes' :
+                        # Delay failure to later stage, when the restart file won't be available for WRF to run
+                        # At this point, if WPS output is to be saved, we can go on with WPS+real
+                        logging.info( "Restart file '%s' was not copied, but WPS output will be saved, so let's proceed a bit further." % file_name )
+                    else :
+                        raise JobError( "'%s' has not been copied" % file_name, Job.CodeError.COPY_RST_FILE )
                 files_downloaded += 1
             if not files_downloaded :
-                raise JobError( "No restart file has been downloaded", Job.CodeError.COPY_RST_FILE )
+                if params.save_wps == 'yes' :
+                    logging.info( "No restart file has been downloaded, but WPS output will be saved, so let's proceed a bit further." % file_name )
+                else :
+                    raise JobError( "No restart file has been downloaded", Job.CodeError.COPY_RST_FILE )
             job_db.set_job_status( Job.Status.DOWN_RESTART )
 
         ##

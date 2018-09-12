@@ -56,6 +56,8 @@ class Job (drm4g.managers.Job):
         args += '#SBATCH --error=$stderr\n'
         if parameters['queue'] != 'default':
             args += '#SBATCH -p $queue\n'
+        if 'ExcNodeList' in parameters : 
+            args += '#SBATCH --exclude=%s\n' % (parameters['ExcNodeList'])
         if 'maxWallTime' in parameters : 
             args += '#SBATCH --time=%s\n' % (parameters['maxWallTime'])
         if 'maxMemory' in parameters :

@@ -2,7 +2,7 @@
 Manage WRF4G realizations. 
     
 Usage: 
-     wrf4g rea <name> submit       [ --dbg ] [ --dry-run ] [ --priority=<value> ] [ --rerun ] [ <first_ch> [ <last_ch> ] ]
+     wrf4g rea <name> submit       [ --dbg ] [ --dry-run ] [ --priority=<value> ] [--nodeps] [ --rerun ] [ <first_ch> [ <last_ch> ] ]
      wrf4g rea <name> status       [ --dbg ] [ --delay=<seconds> ]
      wrf4g rea <name> info
      wrf4g rea <name> log          [ --dbg ] [ --dir=<directory> ] <chunk_id>
@@ -15,10 +15,11 @@ Options:
     --dbg                  Debug mode.
     -n --dry-run           Dry run.
     --rerun                Force to run although the realization has finished.
+    --nodeps               Ignore dependencies between consecutive chunks.
     -P --priority=<value>  Fix-priority for scheduling [default: 0].
     --delay=<seconds>      Refresh experiment information every delay seconds.    
     -d --dir=<directory>   Directory to unpack log files [default: ./].
-    --hard                 Remove jobs from without synchronizing.
+    --hard                 Remove jobs from queue without synchronizing.
   
 Commands:
     submit                 Submit the realization.       
@@ -92,6 +93,7 @@ def run( arg ) :
                 rea.run( first_chunk_run = arg[ '<first_ch>' ], 
                          last_chunk_run  = arg[ '<last_ch>' ], 
                          rerun           = arg[ '--rerun' ],
+                         nodeps          = arg[ '--nodeps' ],
                          priority        = int( arg[ '--priority' ] ) )
             elif arg[ 'status' ] :
                 if not arg[ '--delay' ] :
