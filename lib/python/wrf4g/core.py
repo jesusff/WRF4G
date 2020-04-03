@@ -828,6 +828,7 @@ class Chunk( object ):
         # If it is the first chunk of the realization, or we are considering non-dependent chunks (--nodeps flag)
         if index == 0 or nodeps == True:
             job.gw_job    = gw_job.submit( priority = priority, file_template = file_template )
+            logging.info("Independent chunk!") 
         else:
             # if the chunk is not the first of the realization, 
             # gwsubmit has an argument, gw_job of the job before
